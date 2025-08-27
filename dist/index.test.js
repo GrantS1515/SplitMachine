@@ -1,11 +1,31 @@
-// import { pipe } from 'fp-ts/lib/function.js' 
-// import * as B from "fp-ts/lib/boolean.js"
-// import * as Sm from "./index.js"
-// import { expect } from "chai"
-// import * as Op from "fp-ts/lib/Option.js"
-// import * as E from "fp-ts/lib/Either.js" 
-// import * as A from "fp-ts/lib/Array.js"
-// import * as SE from "fp-ts/lib/Separated.js"
+import { pipe } from 'fp-ts/lib/function.js';
+import * as Sm from "./index.js";
+import { expect } from "chai";
+import * as Op from "fp-ts/lib/Option.js";
+import * as E from "fp-ts/lib/Either.js";
+import * as Sp from "SplitString/dist/index.js";
+import * as EqTo from "eq-to/dist/index.js";
+const validLetterState = sp => pipe();
+const letterState = {
+    name: "State",
+    id: "letterState",
+    entry: (sp) => pipe(sp, validLetterState),
+    transitions: [],
+    stop: (sp) => pipe(sp, Sp.isRightNonEmpty, Sp.toBool, (b) => !b)
+};
+const stateSplit0 = {
+    name: "StateSplit",
+    nextState: "letterState",
+    split: Sp.newSplitString("a")("")
+};
+describe("nextState", () => {
+    it("if stop -> right none", () => {
+        pipe(Sp.newSplitString("a")(""), Sm.nextState(letterState), E.match(() => expect.fail('fail'), () => Op.match(() => expect(true).to.equal(true), () => expect.fail('fail'))));
+    });
+    it("if valid next state -> right id", () => {
+        pipe(Sp.newSplitString("")("a"), Sm.nextState(letterState), E.match(() => expect.fail('fail left'), () => Op.match(() => expect.fail('fail op none'), (ssp) => pipe(Sm.stateSplitEq([ssp, stateSplit0]), EqTo.toBool, (b) => expect(b).to.equal(true)))));
+    });
+});
 // // simple direct match state
 // const shiftLeft: Sm.State = {
 // 	name: "State",

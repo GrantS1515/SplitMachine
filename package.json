@@ -19,7 +19,8 @@
     "tsc-watch": "^6.0.4"
   },
   "dependencies": {
-    "fp-ts": "^2.16.6"
+    "fp-ts": "^2.16.6",
+    "immer": "^10.1.1"
   },
   "keywords": [],
   "author": "",
