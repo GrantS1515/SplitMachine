@@ -14,9 +14,30 @@ import * as EqTo from "eq-to/dist/index.js"
 
 export type Machine = {
 	readonly name: "Machine",
-	readonly transitions: Map<string, string[]>,
+	readonly transitions: Map<string, StateFn[]>,
 	readonly stopId: string,
+	readonly currentState: State,
 }
+
+export const nextState:
+	(mach: Machine) =>
+	(initialId: string) =>
+	(sps: Sp.SplitString) =>
+	E.Either<Err, State> =
+	mach =>
+	initialId =>
+	sps => {
+
+		
+
+		return pipe(
+			// get the current sps
+			// get the transitions and get the next state
+			// check that stopId is not hit
+			// recurse
+
+		)
+	}
 
 export type Err = {
 	readonly name: "Err",
@@ -58,81 +79,3 @@ export const stateEq:
 		E.chain(EqTo.checkField("split")(Sp.splitStringEq)),
 	)
 
-// export type StateSplit = {
-// 	readonly name: "StateSplit",
-// 	readonly nextState: string,
-// 	readonly split: Sp.SplitString,
-// }
-
-// export const stateSplitEq:
-// 	(v: [StateSplit, StateSplit]) =>
-// 	E.Either<EqTo.Err, [StateSplit, StateSplit]> =
-// 	v =>
-// 	pipe(
-// 		v,
-// 		EqTo.checkField("name")(EqTo.basicEq),
-// 		E.chain(EqTo.checkField("nextState")(EqTo.basicEq)),
-// 		E.chain(EqTo.checkField("split")(Sp.splitStringEq))
-// 	)
-
-// export type SepFn = (sep: SE.Separated<string, string>) => E.Either<Err, SE.Separated<string, string> >
-
-// export type State = {
-// 	name: "State",
-// 	id: string, 
-// 	entry: SepFn,
-// 	transitions: Map<string, P.Predicate<SE.Separated<string, string>>>,
-// 	stop: Op.Option<P.Predicate<string>>,
-// }
-
-// export const newMachine:
-// 	(initial: State) =>
-// 	(states: State[]) =>
-// 	Machine =
-// 	initial =>
-// 	states =>
-// 	pipe(
-
-// 	)
-
-// export type SepNext = {
-// 	readonly name: "SepNext",
-// 	readonly opNextState: Op.Option<State>, 
-// 	readonly sep: SE.Separated<string, string>
-// }
-
-// export const processState:
-// 	(mach: Machine) =>
-// 	(st: State) =>
-//  	(s: SE.Separated<string, string> ) =>
-//  	E.Either< Err, SepNext > =
-//  	match =>
-//  	st =>
-//  	sep => {
-//  		const newSep = st.fn(sep)
-
-//  		const stopBool = Op.match(
-//  			() => false,
-//  			(pred) => pred(newSep.right)
-//  		)(st.stop)
-
-//  		if (stopBool) {
-//  			const temp = {
-//  				name: "SepNext",
-//  				opNextState: Op.none,
-//  				sep: newSep,
-//  			}
-//  			return E.right(temp)
-//  		}
-
-//  	}
- 	
-
-// const processStr:
-// 	(mach: Machine) =>
-// 	(s: string ) =>
-// 	E.Either<Err, SE.Separated<string, string> > =
-// 	mach =>
-// 	s => 
-// 	pipe(
-// 	)
