@@ -11,6 +11,9 @@ import * as P from "fp-ts/lib/Predicate.js"
 import { produce } from "immer"
 import * as Sp from "SplitString/dist/index.js" 
 import * as EqTo from "eq-to/dist/index.js"
+import * as Ma from "fp-ts/lib/Map.js"
+import { Eq as strEq } from "fp-ts/lib/string.js"
+
 
 export type Machine = {
 	readonly name: "Machine",
@@ -28,14 +31,16 @@ export const nextState:
 	initialId =>
 	sps => {
 
-		
-
 		return pipe(
-			// get the current sps
-			// get the transitions and get the next state
-			// check that stopId is not hit
-			// recurse
-
+			// mach.currentState.split,
+			mach.currentState.id,
+			mach.transitions.get,
+			(v) => 
+				v === undefined ? 
+				E.left(newErr("Undefined Transition")) : 
+				E.right(v),
+			(a) => A.map(fn => fn(mach.currentState.split)),
+			// combine the eithers
 		)
 	}
 
