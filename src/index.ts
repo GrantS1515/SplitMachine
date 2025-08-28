@@ -14,6 +14,8 @@ import * as EqTo from "eq-to/dist/index.js"
 
 export type Machine = {
 	readonly name: "Machine",
+	readonly transitions: Map<string, string[]>,
+	readonly stopId: string,
 }
 
 export type Err = {
@@ -34,41 +36,44 @@ export const newErr:
 		draft.msg = msg
 	})
 
+export type StateFn = 
+	(s: Sp.SplitString) => 
+	E.Either<Err, State>
+
+
 export type State = {
 	readonly name: "State",
-	readonly id: string, 
-	readonly entry: (s: Sp.SplitString) => E.Either<Err, Sp.SplitString>,
-	readonly transitions: ((sp: Sp.SplitString) => E.Either<Err, string>)[],
-	readonly stop: P.Predicate<Sp.SplitString>,
+	readonly id: string,
+	readonly split: Sp.SplitString, 
 }
 
-export type StateSplit = {
-	readonly name: "StateSplit",
-	readonly nextState: string,
-	readonly split: Sp.SplitString,
-}
-
-export const stateSplitEq:
-	(v: [StateSplit, StateSplit]) =>
-	E.Either<EqTo.Err, [StateSplit, StateSplit]> =
+export const stateEq:
+	(v: [State, State]) =>
+	E.Either<EqTo.Err, [State, State]> =
 	v =>
 	pipe(
 		v,
 		EqTo.checkField("name")(EqTo.basicEq),
-		E.chain(EqTo.checkField("nextState")(EqTo.basicEq)),
-		E.chain(EqTo.checkField("split")(Sp.splitStringEq))
+		E.chain(EqTo.checkField("id")(EqTo.basicEq)),
+		E.chain(EqTo.checkField("split")(Sp.splitStringEq)),
 	)
 
-export const nextState:
-	(st: State) =>
-	(sp: Sp.SplitString) =>
-	E.Either<Err, Op.Option<StateSplit> > =
-	st =>
-	sp => {
-		if (st.stop(sp)) {
-			return E.right(Op.none)
-		}
-	}
+// export type StateSplit = {
+// 	readonly name: "StateSplit",
+// 	readonly nextState: string,
+// 	readonly split: Sp.SplitString,
+// }
+
+// export const stateSplitEq:
+// 	(v: [StateSplit, StateSplit]) =>
+// 	E.Either<EqTo.Err, [StateSplit, StateSplit]> =
+// 	v =>
+// 	pipe(
+// 		v,
+// 		EqTo.checkField("name")(EqTo.basicEq),
+// 		E.chain(EqTo.checkField("nextState")(EqTo.basicEq)),
+// 		E.chain(EqTo.checkField("split")(Sp.splitStringEq))
+// 	)
 
 // export type SepFn = (sep: SE.Separated<string, string>) => E.Either<Err, SE.Separated<string, string> >
 

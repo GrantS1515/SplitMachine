@@ -1,6 +1,5 @@
 import * as E from "fp-ts/lib/Either.js";
 import { pipe } from 'fp-ts/lib/function.js';
-import * as Op from "fp-ts/lib/Option.js";
 import { produce } from "immer";
 import * as Sp from "SplitString/dist/index.js";
 import * as EqTo from "eq-to/dist/index.js";
@@ -11,12 +10,22 @@ const defaultErr = {
 export const newErr = msg => produce(defaultErr, draft => {
     draft.msg = msg;
 });
-export const stateSplitEq = v => pipe(v, EqTo.checkField("name")(EqTo.basicEq), E.chain(EqTo.checkField("nextState")(EqTo.basicEq)), E.chain(EqTo.checkField("split")(Sp.splitStringEq)));
-export const nextState = st => sp => {
-    if (st.stop(sp)) {
-        return E.right(Op.none);
-    }
-};
+export const stateEq = v => pipe(v, EqTo.checkField("name")(EqTo.basicEq), E.chain(EqTo.checkField("id")(EqTo.basicEq)), E.chain(EqTo.checkField("split")(Sp.splitStringEq)));
+// export type StateSplit = {
+// 	readonly name: "StateSplit",
+// 	readonly nextState: string,
+// 	readonly split: Sp.SplitString,
+// }
+// export const stateSplitEq:
+// 	(v: [StateSplit, StateSplit]) =>
+// 	E.Either<EqTo.Err, [StateSplit, StateSplit]> =
+// 	v =>
+// 	pipe(
+// 		v,
+// 		EqTo.checkField("name")(EqTo.basicEq),
+// 		E.chain(EqTo.checkField("nextState")(EqTo.basicEq)),
+// 		E.chain(EqTo.checkField("split")(Sp.splitStringEq))
+// 	)
 // export type SepFn = (sep: SE.Separated<string, string>) => E.Either<Err, SE.Separated<string, string> >
 // export type State = {
 // 	name: "State",
