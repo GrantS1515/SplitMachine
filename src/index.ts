@@ -13,7 +13,7 @@ import * as Sp from "SplitString/dist/index.js"
 import * as EqTo from "eq-to/dist/index.js"
 import * as Ma from "fp-ts/lib/Map.js"
 import { Eq as strEq } from "fp-ts/lib/string.js"
-
+import * as Utils from "fptsutils/dist/monoids.js"
 
 export type Machine = {
 	readonly name: "Machine",
@@ -24,23 +24,22 @@ export type Machine = {
 
 export const nextState:
 	(mach: Machine) =>
-	(initialId: string) =>
-	(sps: Sp.SplitString) =>
 	E.Either<Err, State> =
-	mach =>
-	initialId =>
-	sps => {
-
-		return pipe(
-			// mach.currentState.split,
-			mach.currentState.id,
-			mach.transitions.get,
+	mach => {
+		return pipe(			
+			mach.transitions.get(mach.currentState.id),
 			(v) => 
 				v === undefined ? 
 				E.left(newErr("Undefined Transition")) : 
 				E.right(v),
-			(a) => A.map(fn => fn(mach.currentState.split)),
-			// combine the eithers
+			E.map(
+				A.map((fn: StateFn) => 
+					fn(mach.currentState.split)
+				)
+			),
+			E.chain(
+				M.concatAll(Utils.leftMostEither(newErr("No valid state")))
+			),
 		)
 	}
 
@@ -48,6 +47,16 @@ export type Err = {
 	readonly name: "Err",
 	readonly msg: string,
 }
+
+export const errEq:
+	(e: [Err, Err]) =>
+	E.Either<EqTo.Err, [Err, Err]> =
+	e =>
+	pipe(
+		e,
+		EqTo.checkField("name")(EqTo.basicEq),
+		E.chain(EqTo.checkField("msg")(EqTo.basicEq)),
+	)
 
 const defaultErr: Err = {
 	name: "Err",

@@ -31,13 +31,25 @@ const st2 = produce(st0, draft => {
     draft.split = Sp.newSplitString("a")("a");
     draft.id = "extLetter";
 });
+const st3 = produce(st0, draft => {
+    draft.split = Sp.newSplitString("")("a");
+    draft.id = "extLetter";
+});
 describe("state fns", () => {
     it("external letter state -> right SplitString", () => {
         pipe(sps1, extLetterFn, E.match(() => expect.fail("fail"), (st) => pipe(Sm.stateEq([st, st1]), EqTo.toBool, b => expect(b).to.equal(true))));
     });
 });
+const mach1 = {
+    name: "Machine",
+    transitions: new Map([
+        ["extLetter", [extLetterFn]],
+    ]),
+    stopId: "stop",
+    currentState: st3,
+};
 describe("machine tests", () => {
     it("can transition to self letter state", () => {
-        pipe(sps3, Sm.nextState(mach1)("extLetter"), E.match(() => expect.fail("fail"), (st) => pipe(Sm.stateEq([st, st2]), EqTo.toBool, b => expect(b).to.equal(true))));
+        pipe(mach1, Sm.nextState, (st) => [st, E.right(st1)], EqTo.checkEither(Sm.errEq, Sm.stateEq), EqTo.toBool, b => expect(b).to.equal(true));
     });
 });
