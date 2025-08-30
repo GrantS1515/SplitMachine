@@ -26,8 +26,8 @@ export const nextState:
 	(state: State) =>
 	E.Either<Err, State> =
 	mach =>
-	st =>
-		pipe(			
+	st => {
+		return pipe(			
 			mach.transitions.get(st.id),
 			(v) => 
 				v === undefined ? 
@@ -42,6 +42,38 @@ export const nextState:
 				M.concatAll(Utils.leftMostEither(newErr("No valid state")))
 			),
 		)
+	}
+
+export const interp:
+	(mach: Machine) =>
+	(st: State) =>
+	E.Either<Err, Sp.SplitString> =
+	mach =>
+	st => {
+
+		const _interp:
+			(mach: Machine) =>
+			(st: State) =>
+			E.Either<Err, State> =
+			mach =>
+			st => {
+				if (st.id === mach.stopId) {
+					return E.right(st)
+				} else {
+					return pipe(
+						st,
+						nextState(mach),
+						E.chain(_interp(mach))
+					)
+				}
+			}
+
+		return pipe(
+			st,
+			_interp(mach),
+			E.map(s => s.split)
+		)
+	}
 
 export type Err = {
 	readonly name: "Err",

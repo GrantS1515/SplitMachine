@@ -20,10 +20,6 @@ const sps2 = produce(sps0, draft => {
 	draft.sep = SE.separated("a", "")	
 })
 
-const sps3 = produce(sps0, draft => {
-	draft.sep = SE.separated("a", "")	
-})
-
 const extLetterFn: Sm.StateFn = 
 	sps =>
 pipe(
@@ -59,6 +55,11 @@ const st3 = produce(st0, draft => {
 	draft.id = "extLetter"
 })
 
+const st4 = produce(st0, draft => {
+	draft.split = Sp.newSplitString("a")("")
+	draft.id = "stop"
+})
+
 describe("state fns", () => {
 	it("external letter state -> right SplitString", () => {
 		pipe(
@@ -84,6 +85,22 @@ const mach1: Sm.Machine = {
 	stopId: "stop",
 }
 
+const stopFn: Sm.StateFn = 
+	sps =>
+	pipe(
+		sps,
+		Sp.isRightEmpty,
+		E.map(sp => ({ name: "State", id: "stop", split: sp }))
+	)
+
+const mach2: Sm.Machine = {
+	name: "Machine",
+	transitions: new Map([
+		["extLetter", [extLetterFn, stopFn]],
+	]),
+	stopId: "stop",
+}
+
 describe("machine tests", () => {
 	
 	it("can transition to self letter state", () => {
@@ -92,6 +109,28 @@ describe("machine tests", () => {
 			Sm.nextState(mach1),
 			(st) => [st, E.right(st1)],
 			EqTo.checkEither(Sm.errEq, Sm.stateEq),
+			EqTo.toBool,
+			b => expect(b).to.equal(true),
+		)
+	})
+
+	it("letter to stop state", () => {
+		pipe(
+			st1,
+			Sm.nextState(mach2),
+			(st) => [st, E.right(st4)],
+			EqTo.checkEither(Sm.errEq, Sm.stateEq),
+			EqTo.toBool,
+			b => expect(b).to.equal(true),
+		)
+	})
+
+	it("letter state and then stop", () => {
+		pipe(
+			st3,
+			Sm.interp(mach2),
+			(sps) => [sps, E.right(sps2)],
+			EqTo.checkEither(Sm.errEq, Sp.splitStringEq),
 			EqTo.toBool,
 			b => expect(b).to.equal(true),
 		)
