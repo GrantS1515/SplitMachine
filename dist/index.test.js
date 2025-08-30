@@ -14,6 +14,9 @@ const sps1 = produce(sps0, draft => {
 const sps2 = produce(sps0, draft => {
     draft.sep = SE.separated("a", "");
 });
+const sps3 = produce(sps0, draft => {
+    draft.sep = SE.separated("aa", "");
+});
 const extLetterFn = sps => pipe(sps, Sp.leadRight(1), E.map((s) => s.match(/^[a-z0-9]+$/i)), E.map(s => s !== null), E.chain(b => B.match(() => E.left(Sm.newErr("Not Letter")), () => Sp.shiftLeft(1)(sps))(b)), E.map(sp => ({ name: "State", id: "extLetter", split: sp })));
 const st0 = {
     name: "State",
@@ -35,6 +38,10 @@ const st3 = produce(st0, draft => {
 const st4 = produce(st0, draft => {
     draft.split = Sp.newSplitString("a")("");
     draft.id = "stop";
+});
+const st5 = produce(st0, draft => {
+    draft.split = Sp.newSplitString("")("aa");
+    draft.id = "extLetter";
 });
 describe("state fns", () => {
     it("external letter state -> right SplitString", () => {
@@ -65,5 +72,8 @@ describe("machine tests", () => {
     });
     it("letter state and then stop", () => {
         pipe(st3, Sm.interp(mach2), (sps) => [sps, E.right(sps2)], EqTo.checkEither(Sm.errEq, Sp.splitStringEq), EqTo.toBool, b => expect(b).to.equal(true));
+    });
+    it("letter letter stop", () => {
+        pipe(st5, Sm.interp(mach2), (sps) => [sps, E.right(sps3)], EqTo.checkEither(Sm.errEq, Sp.splitStringEq), EqTo.toBool, b => expect(b).to.equal(true));
     });
 });

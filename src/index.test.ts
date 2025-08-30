@@ -20,6 +20,10 @@ const sps2 = produce(sps0, draft => {
 	draft.sep = SE.separated("a", "")	
 })
 
+const sps3 = produce(sps0, draft => {
+	draft.sep = SE.separated("aa", "")	
+})
+
 const extLetterFn: Sm.StateFn = 
 	sps =>
 pipe(
@@ -59,6 +63,12 @@ const st4 = produce(st0, draft => {
 	draft.split = Sp.newSplitString("a")("")
 	draft.id = "stop"
 })
+
+const st5 = produce(st0, draft => {
+	draft.split = Sp.newSplitString("")("aa")
+	draft.id = "extLetter"
+})
+
 
 describe("state fns", () => {
 	it("external letter state -> right SplitString", () => {
@@ -130,6 +140,17 @@ describe("machine tests", () => {
 			st3,
 			Sm.interp(mach2),
 			(sps) => [sps, E.right(sps2)],
+			EqTo.checkEither(Sm.errEq, Sp.splitStringEq),
+			EqTo.toBool,
+			b => expect(b).to.equal(true),
+		)
+	})
+
+	it("letter letter stop", () => {
+		pipe(
+			st5,
+			Sm.interp(mach2),
+			(sps) => [sps, E.right(sps3)],
 			EqTo.checkEither(Sm.errEq, Sp.splitStringEq),
 			EqTo.toBool,
 			b => expect(b).to.equal(true),
