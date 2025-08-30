@@ -19,29 +19,29 @@ export type Machine = {
 	readonly name: "Machine",
 	readonly transitions: Map<string, StateFn[]>,
 	readonly stopId: string,
-	readonly currentState: State,
 }
 
 export const nextState:
 	(mach: Machine) =>
+	(state: State) =>
 	E.Either<Err, State> =
-	mach => {
-		return pipe(			
-			mach.transitions.get(mach.currentState.id),
+	mach =>
+	st =>
+		pipe(			
+			mach.transitions.get(st.id),
 			(v) => 
 				v === undefined ? 
 				E.left(newErr("Undefined Transition")) : 
 				E.right(v),
 			E.map(
 				A.map((fn: StateFn) => 
-					fn(mach.currentState.split)
+					fn(st.split)
 				)
 			),
 			E.chain(
 				M.concatAll(Utils.leftMostEither(newErr("No valid state")))
 			),
 		)
-	}
 
 export type Err = {
 	readonly name: "Err",

@@ -6,11 +6,9 @@ import { produce } from "immer";
 import * as Sp from "SplitString/dist/index.js";
 import * as EqTo from "eq-to/dist/index.js";
 import * as Utils from "fptsutils/dist/monoids.js";
-export const nextState = mach => {
-    return pipe(mach.transitions.get(mach.currentState.id), (v) => v === undefined ?
-        E.left(newErr("Undefined Transition")) :
-        E.right(v), E.map(A.map((fn) => fn(mach.currentState.split))), E.chain(M.concatAll(Utils.leftMostEither(newErr("No valid state")))));
-};
+export const nextState = mach => st => pipe(mach.transitions.get(st.id), (v) => v === undefined ?
+    E.left(newErr("Undefined Transition")) :
+    E.right(v), E.map(A.map((fn) => fn(st.split))), E.chain(M.concatAll(Utils.leftMostEither(newErr("No valid state")))));
 export const errEq = e => pipe(e, EqTo.checkField("name")(EqTo.basicEq), E.chain(EqTo.checkField("msg")(EqTo.basicEq)));
 const defaultErr = {
     name: "Err",

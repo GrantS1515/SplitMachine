@@ -82,29 +82,19 @@ const mach1: Sm.Machine = {
 		["extLetter", [extLetterFn]],
 	]),
 	stopId: "stop",
-	currentState: st3,
 }
 
 describe("machine tests", () => {
+	
 	it("can transition to self letter state", () => {
 		pipe(
-			mach1,
-			Sm.nextState,
+			st3,
+			Sm.nextState(mach1),
 			(st) => [st, E.right(st1)],
 			EqTo.checkEither(Sm.errEq, Sm.stateEq),
 			EqTo.toBool,
 			b => expect(b).to.equal(true),
-
-			// E.match(
-			// 	() => expect.fail("fail"),
-			// 	(st) => pipe(
-			// 		Sm.stateEq([st, st1]),
-			// 		EqTo.toBool,
-			// 		b => expect(b).to.equal(true)
-			// 	)
-
-			// )	
 		)
 	})
-})
 
+})
