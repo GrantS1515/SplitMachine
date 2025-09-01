@@ -1,5 +1,4 @@
 import { pipe } from 'fp-ts/lib/function.js';
-import * as B from "fp-ts/lib/boolean.js";
 import * as Sm from "./index.js";
 import { expect } from "chai";
 import * as E from "fp-ts/lib/Either.js";
@@ -17,7 +16,7 @@ const sps2 = produce(sps0, draft => {
 const sps3 = produce(sps0, draft => {
     draft.sep = SE.separated("aa", "");
 });
-const extLetterFn = sps => pipe(sps, Sp.leadRight(1), E.map((s) => s.match(/^[a-z0-9]+$/i)), E.map(s => s !== null), E.chain(b => B.match(() => E.left(Sm.newErr("Not Letter")), () => Sp.shiftLeft(1)(sps))(b)), E.map(sp => ({ name: "State", id: "extLetter", split: sp })));
+const extLetterFn = Sm.newStateShiftFn(1)(s => pipe(s.match(/^[a-z0-9]+$/i), str => str !== null))("Not a letter")("extLetter");
 const st0 = {
     name: "State",
     id: "",
@@ -55,7 +54,7 @@ const mach1 = {
     ]),
     stopId: "stop",
 };
-const stopFn = sps => pipe(sps, Sp.isRightEmpty, E.map(sp => ({ name: "State", id: "stop", split: sp })));
+const stopFn = Sm.newStopFn("stop");
 const mach2 = {
     name: "Machine",
     transitions: new Map([

@@ -25,18 +25,13 @@ const sps3 = produce(sps0, draft => {
 })
 
 const extLetterFn: Sm.StateFn = 
-	sps =>
-	pipe(
-		sps,
-		Sp.leadRight(1),
-		E.map((s) => s.match(/^[a-z0-9]+$/i)),
-		E.map(s => s !== null),
-		E.chain(b => B.match(
-			() => E.left(Sm.newErr("Not Letter")),
-			() => Sp.shiftLeft(1)(sps),
-		)(b) ),
-		E.map(sp => ({ name: "State", id: "extLetter", split: sp }))
-	)
+    Sm.newStateShiftFn(1)
+    (s => pipe( 
+        s.match(/^[a-z0-9]+$/i),
+        str => str !== null,
+    ))
+    ("Not a letter")
+    ("extLetter")
 
 const st0: Sm.State = {
 	name: "State",
@@ -96,12 +91,7 @@ const mach1: Sm.Machine = {
 }
 
 const stopFn: Sm.StateFn = 
-	sps =>
-	pipe(
-		sps,
-		Sp.isRightEmpty,
-		E.map(sp => ({ name: "State", id: "stop", split: sp }))
-	)
+    Sm.newStopFn("stop")
 
 const mach2: Sm.Machine = {
 	name: "Machine",

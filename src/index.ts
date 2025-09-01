@@ -113,7 +113,7 @@ export const newStateShiftFn:
 	(errMsg: string) =>
 	(id: string) =>
 	(sps: Sp.SplitString) =>
-	StateFn =
+    E.Either<Err, State> =
 	strLen =>
 	testFn =>
 	errMsg =>
@@ -129,6 +129,18 @@ export const newStateShiftFn:
 		)(b) ),
 		E.map(sp => ({ name: "State", id: id, split: sp }))
 	)
+
+export const newStopFn:
+    (id: string) =>
+    (sps: Sp.SplitString) =>
+    E.Either<Err, State> =
+    id =>
+    sps =>
+    pipe(
+		sps,
+		Sp.isRightEmpty,
+		E.map(sp => ({ name: "State", id: id, split: sp }))
+    )
 
 
 export type State = {
