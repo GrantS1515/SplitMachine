@@ -26,17 +26,17 @@ const sps3 = produce(sps0, draft => {
 
 const extLetterFn: Sm.StateFn = 
 	sps =>
-pipe(
-	sps,
-	Sp.leadRight(1),
-	E.map((s) => s.match(/^[a-z0-9]+$/i)),
-	E.map(s => s !== null),
-	E.chain(b => B.match(
-		() => E.left(Sm.newErr("Not Letter")),
-		() => Sp.shiftLeft(1)(sps),
-	)(b) ),
-	E.map(sp => ({ name: "State", id: "extLetter", split: sp }))
-)
+	pipe(
+		sps,
+		Sp.leadRight(1),
+		E.map((s) => s.match(/^[a-z0-9]+$/i)),
+		E.map(s => s !== null),
+		E.chain(b => B.match(
+			() => E.left(Sm.newErr("Not Letter")),
+			() => Sp.shiftLeft(1)(sps),
+		)(b) ),
+		E.map(sp => ({ name: "State", id: "extLetter", split: sp }))
+	)
 
 const st0: Sm.State = {
 	name: "State",

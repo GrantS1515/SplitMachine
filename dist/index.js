@@ -1,4 +1,5 @@
 import * as E from "fp-ts/lib/Either.js";
+import * as B from "fp-ts/lib/boolean.js";
 import { pipe } from 'fp-ts/lib/function.js';
 import * as A from "fp-ts/lib/Array.js";
 import * as M from "fp-ts/lib/Monoid.js";
@@ -30,4 +31,5 @@ const defaultErr = {
 export const newErr = msg => produce(defaultErr, draft => {
     draft.msg = msg;
 });
+export const newStateShiftFn = strLen => testFn => errMsg => id => sps => pipe(sps, Sp.leadRight(strLen), E.map(testFn), E.chain(b => B.match(() => E.left(newErr(errMsg)), () => Sp.shiftLeft(strLen)(sps))(b)), E.map(sp => ({ name: "State", id: id, split: sp })));
 export const stateEq = v => pipe(v, EqTo.checkField("name")(EqTo.basicEq), E.chain(EqTo.checkField("id")(EqTo.basicEq)), E.chain(EqTo.checkField("split")(Sp.splitStringEq)));

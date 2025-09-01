@@ -107,6 +107,29 @@ export type StateFn =
 	(s: Sp.SplitString) => 
 	E.Either<Err, State>
 
+export const newStateShiftFn:
+	(strLen: number) =>
+	(testFn: P.Predicate<string>) =>
+	(errMsg: string) =>
+	(id: string) =>
+	(sps: Sp.SplitString) =>
+	StateFn =
+	strLen =>
+	testFn =>
+	errMsg =>
+	id =>
+	sps =>
+	pipe(
+		sps,
+		Sp.leadRight(strLen),
+		E.map(testFn),
+		E.chain(b => B.match(
+			() => E.left(newErr(errMsg)),
+			() => Sp.shiftLeft(strLen)(sps),
+		)(b) ),
+		E.map(sp => ({ name: "State", id: id, split: sp }))
+	)
+
 
 export type State = {
 	readonly name: "State",
