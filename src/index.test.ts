@@ -24,14 +24,20 @@ const sps3 = produce(sps0, draft => {
 	draft.sep = SE.separated("aa", "")	
 })
 
-const extLetterFn: Sm.StateFn = 
-    Sm.newStateShiftFn(1)
-    (s => pipe( 
-        s.match(/^[a-z0-9]+$/i),
-        str => str !== null,
-    ))
-    ("Not a letter")
-    ("extLetter")
+const extLetterFnArgs: Sm.ShiftFnArgs = {
+    name: "ShiftFnArgs",
+    strLen: 1,
+	testFn: (s => pipe( 
+            s.match(/^[a-z0-9]+$/i),
+            str => str !== null,
+        )),
+	errMsg: "Not a letter", 
+	id: "extLetter", 
+}
+
+const extLetterFn: Sm.StateFn =
+    Sm.newStateShiftFn(extLetterFnArgs)
+
 
 const st0: Sm.State = {
 	name: "State",
