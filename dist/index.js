@@ -9,8 +9,8 @@ import * as EqTo from "eq-to/dist/index.js";
 import * as Utils from "fptsutils/dist/monoids.js";
 export const nextState = mach => st => {
     return pipe(mach.transitions.get(st.id), (v) => v === undefined ?
-        E.left(newErr("Undefined Transition")) :
-        E.right(v), E.map(A.map((fn) => fn(st.split))), E.chain(M.concatAll(Utils.leftMostEither(newErr("No valid state")))));
+        E.left(newErr(`Undefined Transition to id ${st.id}`)) :
+        E.right(v), E.map(A.map((fn) => fn(st.split))), E.chain(M.concatAll(Utils.leftMostEither(newErr(`No valid state given id ${st.id}`)))));
 };
 export const interp = mach => st => {
     const _interp = mach => st => {

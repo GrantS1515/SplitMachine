@@ -31,7 +31,7 @@ export const nextState:
 			mach.transitions.get(st.id),
 			(v) => 
 				v === undefined ? 
-				E.left(newErr("Undefined Transition")) : 
+				E.left(newErr(`Undefined Transition to id ${st.id}`)) : 
 				E.right(v),
 			E.map(
 				A.map((fn: StateFn) => 
@@ -39,7 +39,7 @@ export const nextState:
 				)
 			),
 			E.chain(
-				M.concatAll(Utils.leftMostEither(newErr("No valid state")))
+				M.concatAll(Utils.leftMostEither(newErr(`No valid state given id ${st.id}`)))
 			),
 		)
 	}
