@@ -107,18 +107,20 @@ export type StateFn =
 	(s: Sp.SplitString) => 
 	E.Either<Err, State>
 
-export type ShiftFnArgs = {
-    name: "ShiftFnArgs",
+export type StateFnFn = {
+    name: "StateFnFn",
     strLen: number,
 	testFn: P.Predicate<string>,
-	errMsg: string, 
-	id: string, 
 }
 
 export const newStateShiftFn:
-    (args: ShiftFnArgs) =>
+    (id: string) =>
+    (errMsg: string) =>
+    (args: StateFnFn) =>
 	(sps: Sp.SplitString) =>
     E.Either<Err, State> =
+    id =>
+    errMsg =>
     args =>
     sps =>
     pipe(
@@ -126,34 +128,11 @@ export const newStateShiftFn:
 		Sp.leadRight(args.strLen),
 		E.map(args.testFn),
 		E.chain(b => B.match(
-			() => E.left(newErr(args.errMsg)),
+			() => E.left(newErr(errMsg)),
 			() => Sp.shiftLeft(args.strLen)(sps),
 		)(b) ),
-		E.map(sp => ({ name: "State", id: args.id, split: sp }))
+		E.map(sp => ({ name: "State", id: id, split: sp }))
     )
-
-//export const newStateShiftFn:
-//	(strLen: number) =>
-//	(testFn: P.Predicate<string>) =>
-//	(errMsg: string) =>
-//	(id: string) =>
-//	(sps: Sp.SplitString) =>
-//    E.Either<Err, State> =
-//	strLen =>
-//	testFn =>
-//	errMsg =>
-//	id =>
-//	sps =>
-//	pipe(
-//		sps,
-//		Sp.leadRight(strLen),
-//		E.map(testFn),
-//		E.chain(b => B.match(
-//			() => E.left(newErr(errMsg)),
-//			() => Sp.shiftLeft(strLen)(sps),
-//		)(b) ),
-//		E.map(sp => ({ name: "State", id: id, split: sp }))
-//	)
 
 export const newStopFn:
     (id: string) =>

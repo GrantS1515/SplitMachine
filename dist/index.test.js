@@ -17,13 +17,11 @@ const sps3 = produce(sps0, draft => {
     draft.sep = SE.separated("aa", "");
 });
 const extLetterFnArgs = {
-    name: "ShiftFnArgs",
+    name: "StateFnFn",
     strLen: 1,
     testFn: (s => pipe(s.match(/^[a-z0-9]+$/i), str => str !== null)),
-    errMsg: "Not a letter",
-    id: "extLetter",
 };
-const extLetterFn = Sm.newStateShiftFn(extLetterFnArgs);
+const extLetterFn = Sm.newStateShiftFn("extLetter")("Not a letter")(extLetterFnArgs);
 const st0 = {
     name: "State",
     id: "",
