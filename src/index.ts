@@ -107,20 +107,18 @@ export type StateFn =
 	(s: Sp.SplitString) => 
 	E.Either<Err, State>
 
-export type StateFnFn = {
-    name: "StateFnFn",
+export type ShiftFnArgs = {
+    name: "ShiftFnArgs",
     strLen: number,
 	testFn: P.Predicate<string>,
 }
 
 export const newStateShiftFn:
     (id: string) =>
-    (errMsg: string) =>
-    (args: StateFnFn) =>
+    (args: ShiftFnArgs) =>
 	(sps: Sp.SplitString) =>
     E.Either<Err, State> =
     id =>
-    errMsg =>
     args =>
     sps =>
     pipe(
@@ -128,8 +126,35 @@ export const newStateShiftFn:
 		Sp.leadRight(args.strLen),
 		E.map(args.testFn),
 		E.chain(b => B.match(
-			() => E.left(newErr(errMsg)),
+			() => E.left(newErr(`Input not recognized by testFn`)),
 			() => Sp.shiftLeft(args.strLen)(sps),
+		)(b) ),
+		E.map(sp => ({ name: "State", id: id, split: sp }))
+    )
+
+
+export type GenFnArgs = {
+    name: "GenFnArgs",
+    strLen: number,
+	testFn: P.Predicate<string>,
+    splitFn: (sps: Sp.SplitString) => E.Either<Err, Sp.SplitString>,
+}
+
+export const newStateGenFn:
+    (id: string) =>
+    (args: GenFnArgs) =>
+	(sps: Sp.SplitString) =>
+    E.Either<Err, State> =
+    id =>
+    args =>
+    sps =>
+    pipe(
+		sps,
+		Sp.leadRight(args.strLen),
+		E.map(args.testFn),
+		E.chain(b => B.match(
+			() => E.left(newErr(`Input not recognized by testFn`)),
+			() => args.splitFn(sps),
 		)(b) ),
 		E.map(sp => ({ name: "State", id: id, split: sp }))
     )

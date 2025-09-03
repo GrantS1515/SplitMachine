@@ -24,8 +24,10 @@ const sps3 = produce(sps0, draft => {
 	draft.sep = SE.separated("aa", "")	
 })
 
-const extLetterFnArgs: Sm.StateFnFn = {
-    name: "StateFnFn",
+const sps4 = Sp.newSplitString("\"a\"")("")
+
+const extLetterFnArgs: Sm.ShiftFnArgs = {
+    name: "ShiftFnArgs",
     strLen: 1,
 	testFn: (s => pipe( 
             s.match(/^[a-z0-9]+$/i),
@@ -34,7 +36,7 @@ const extLetterFnArgs: Sm.StateFnFn = {
 }
 
 const extLetterFn: Sm.StateFn =
-    Sm.newStateShiftFn("extLetter")("Not a letter")(extLetterFnArgs)
+    Sm.newStateShiftFn("extLetter")(extLetterFnArgs)
 
 const st0: Sm.State = {
 	name: "State",
@@ -66,7 +68,6 @@ const st5 = produce(st0, draft => {
 	draft.split = Sp.newSplitString("")("aa")
 	draft.id = "extLetter"
 })
-
 
 describe("state fns", () => {
 	it("external letter state -> right SplitString", () => {
@@ -149,5 +150,45 @@ describe("machine tests", () => {
 			b => expect(b).to.equal(true),
 		)
 	})
+})
 
+const genLetInsertArgs: Sm.GenFnArgs = {
+    name: "GenFnArgs",
+    strLen: 1,
+    testFn: (s) => s === "a",
+    splitFn: (sps) => pipe(
+        sps,
+        Sp.insertLeft("\""),
+        Sp.shiftLeft(1),
+        E.map(Sp.insertLeft("\"")),
+    )
+}
+
+const genLetInsertFn: Sm.StateFn =
+    Sm.newStateGenFn("genLetInsert")(genLetInsertArgs)
+
+const st6 = produce(st0, draft => {
+	draft.split = Sp.newSplitString("")("a")
+	draft.id = "genLetInsert"
+})
+
+const mach3: Sm.Machine = {
+	name: "Machine",
+	transitions: new Map([
+		["genLetInsert", [genLetInsertFn, stopFn]],
+	]),
+	stopId: "stop",
+}
+
+describe("general state fn", () => {
+    it("general shift fn can create quotes", () => {
+		pipe(
+			st6,
+			Sm.interp(mach3),
+			(sps) => [sps, E.right(sps4)],
+			EqTo.checkEither(Sm.errEq, Sp.splitStringEq),
+			EqTo.toBool,
+			b => expect(b).to.equal(true),
+		)
+    })
 })
