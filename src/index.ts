@@ -120,24 +120,30 @@ export const newStateShiftFn:
     E.Either<Err, State> =
     id =>
     args =>
-    sps =>
-    pipe(
-		sps,
-		Sp.leadRight(args.strLen),
-		E.map(args.testFn),
-		E.chain(b => B.match(
-			() => E.left(newErr(`Input not recognized by testFn`)),
-			() => Sp.shiftLeft(args.strLen)(sps),
-		)(b) ),
-		E.map(sp => ({ name: "State", id: id, split: sp }))
-    )
-
+    sps => {
+        const fnArgs = produce(defaultGenFnArgs, draft => {
+           draft.strLen = args.strLen
+           draft.testFn = args.testFn
+           draft.splitFn = Sp.shiftLeft(args.strLen)
+        }) 
+        return pipe(
+            sps,
+            newStateGenFn(id)(fnArgs)
+        )
+    }
 
 export type GenFnArgs = {
     name: "GenFnArgs",
     strLen: number,
 	testFn: P.Predicate<string>,
     splitFn: (sps: Sp.SplitString) => E.Either<Err, Sp.SplitString>,
+}
+
+const defaultGenFnArgs: GenFnArgs = {
+    name: "GenFnArgs",
+    strLen: 1,
+    testFn: () => false,
+    splitFn: (sp) => E.right(sp),
 }
 
 export const newStateGenFn:

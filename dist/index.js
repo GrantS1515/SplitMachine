@@ -31,7 +31,20 @@ const defaultErr = {
 export const newErr = msg => produce(defaultErr, draft => {
     draft.msg = msg;
 });
-export const newStateShiftFn = id => args => sps => pipe(sps, Sp.leadRight(args.strLen), E.map(args.testFn), E.chain(b => B.match(() => E.left(newErr(`Input not recognized by testFn`)), () => Sp.shiftLeft(args.strLen)(sps))(b)), E.map(sp => ({ name: "State", id: id, split: sp })));
+export const newStateShiftFn = id => args => sps => {
+    const fnArgs = produce(defaultGenFnArgs, draft => {
+        draft.strLen = args.strLen;
+        draft.testFn = args.testFn;
+        draft.splitFn = Sp.shiftLeft(args.strLen);
+    });
+    return pipe(sps, newStateGenFn(id)(fnArgs));
+};
+const defaultGenFnArgs = {
+    name: "GenFnArgs",
+    strLen: 1,
+    testFn: () => false,
+    splitFn: (sp) => E.right(sp),
+};
 export const newStateGenFn = id => args => sps => pipe(sps, Sp.leadRight(args.strLen), E.map(args.testFn), E.chain(b => B.match(() => E.left(newErr(`Input not recognized by testFn`)), () => args.splitFn(sps))(b)), E.map(sp => ({ name: "State", id: id, split: sp })));
 export const newStopFn = id => sps => pipe(sps, Sp.isRightEmpty, E.map(sp => ({ name: "State", id: id, split: sp })));
 export const stateEq = v => pipe(v, EqTo.checkField("name")(EqTo.basicEq), E.chain(EqTo.checkField("id")(EqTo.basicEq)), E.chain(EqTo.checkField("split")(Sp.splitStringEq)));
