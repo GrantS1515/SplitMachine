@@ -21,6 +21,44 @@ export type Machine = {
 	readonly stopId: string,
 }
 
+export const newMachineWDefStop:
+    (transitions: Map<string, StateFn[]>) =>
+    Machine =
+    transitions => {
+        const defStop: StateFn =
+            sps =>
+            pipe(
+                ({
+                    name: "State",
+                    id: "stop",
+                    split: sps, 
+                }),
+                (s: State) => s,
+                E.right,
+            ) 
+
+        const appendDefStopFn:
+            (stateFns: StateFn[]) =>
+            StateFn[] =
+            stateFns =>
+            pipe(
+                stateFns,
+                A.concat([defStop])
+            )
+
+        return pipe(
+            transitions,
+            Ma.map(appendDefStopFn),
+            t => ({
+                name: "Machine",
+                transitions: t,
+                stopId: "stop" 
+            }),
+            (m: Machine) => m
+        ) 
+    }
+    
+
 export const nextState:
 	(mach: Machine) =>
 	(state: State) =>
@@ -39,7 +77,7 @@ export const nextState:
 				)
 			),
 			E.chain(
-				M.concatAll(Utils.leftMostEither(newErr(`No valid state given id ${st.id}`)))
+				M.concatAll(Utils.leftMostEither(newErr(`No valid state given id ${st.id} ${st.split.sep.left}`)))
 			),
 		)
 	}
@@ -164,7 +202,8 @@ export const newStateGenFn:
 		)(b) ),
 		E.map(sp => ({ name: "State", id: id, split: sp }))
     )
-
+    
+// stop when right is empty
 export const newStopFn:
     (id: string) =>
     (sps: Sp.SplitString) =>
@@ -177,6 +216,7 @@ export const newStopFn:
 		E.map(sp => ({ name: "State", id: id, split: sp }))
     )
 
+// stop when no match is found
 
 export type State = {
 	readonly name: "State",

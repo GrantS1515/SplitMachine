@@ -6,6 +6,7 @@ import * as SE from "fp-ts/lib/Separated.js";
 import * as Sp from "SplitString/dist/index.js";
 import * as EqTo from "eq-to/dist/index.js";
 import { produce } from "immer";
+import { exEq } from "fptsutils/dist/expect.js";
 const sps0 = Sp.newSplitString("")("a");
 const sps1 = produce(sps0, draft => {
     draft.sep = SE.separated("", "a");
@@ -103,5 +104,17 @@ const mach3 = {
 describe("general state fn", () => {
     it("general shift fn can create quotes", () => {
         pipe(st6, Sm.interp(mach3), (sps) => [sps, E.right(sps4)], EqTo.checkEither(Sm.errEq, Sp.splitStringEq), EqTo.toBool, b => expect(b).to.equal(true));
+    });
+});
+const stDefStop0 = produce(st0, draft => {
+    draft.split = Sp.newSplitString("")("a@");
+    draft.id = "extLetter";
+});
+const defStopMach1 = Sm.newMachineWDefStop(new Map([
+    ["extLetter", [extLetterFn]]
+]));
+describe("Machine with stop defaults", () => {
+    it("can create a defaults machine that stops when not matched by next state", () => {
+        pipe(stDefStop0, Sm.interp(defStopMach1), sps => [sps, E.right(Sp.newSplitString("a")("@"))], EqTo.checkEither(Sm.errEq, Sp.splitStringEq), EqTo.toBool, exEq(true));
     });
 });
