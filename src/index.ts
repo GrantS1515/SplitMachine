@@ -14,12 +14,34 @@ import * as EqTo from "eq-to/dist/index.js"
 import * as Ma from "fp-ts/lib/Map.js"
 import { Eq as strEq } from "fp-ts/lib/string.js"
 import * as Utils from "fptsutils/dist/monoids.js"
+import { newErr, Err } from "fptsutils/dist/error.js"
+
+export type State = {
+	readonly name: "State",
+	readonly id: string,
+	readonly split: Sp.SplitString, 
+}
+
+export const stateEq:
+	(v: [State, State]) =>
+	E.Either<EqTo.Err, [State, State]> =
+	v =>
+	pipe(
+		v,
+		EqTo.checkField("name")(EqTo.basicEq),
+		E.chain(EqTo.checkField("id")(EqTo.basicEq)),
+		E.chain(EqTo.checkField("split")(Sp.splitStringEq)),
+	)
 
 export type Machine = {
 	readonly name: "Machine",
 	readonly transitions: Map<string, StateFn[]>,
 	readonly stopId: string,
 }
+
+export type StateFn = 
+	(s: Sp.SplitString) => 
+	E.Either<Err, State>
 
 export const newMachineWDefStop:
     (transitions: Map<string, StateFn[]>) =>
@@ -59,7 +81,7 @@ export const newMachineWDefStop:
     }
     
 
-export const nextState:
+export const _nextState:
 	(mach: Machine) =>
 	(state: State) =>
 	E.Either<Err, State> =
@@ -100,7 +122,7 @@ export const interp:
 				} else {
 					return pipe(
 						st,
-						nextState(mach),
+						_nextState(mach),
 						E.chain(_interp(mach))
 					)
 				}
@@ -113,56 +135,19 @@ export const interp:
 		)
 	}
 
-export type Err = {
-	readonly name: "Err",
-	readonly msg: string,
-}
-
-export const errEq:
-	(e: [Err, Err]) =>
-	E.Either<EqTo.Err, [Err, Err]> =
-	e =>
-	pipe(
-		e,
-		EqTo.checkField("name")(EqTo.basicEq),
-		E.chain(EqTo.checkField("msg")(EqTo.basicEq)),
-	)
-
-const defaultErr: Err = {
-	name: "Err",
-	msg: "SplitMachine Error"
-}
-
-export const newErr:
-	(msg: string) =>
-	Err =
-	msg =>
-	produce(defaultErr, draft => {
-		draft.msg = msg
-	})
-
-export type StateFn = 
-	(s: Sp.SplitString) => 
-	E.Either<Err, State>
-
-export type ShiftFnArgs = {
-    name: "ShiftFnArgs",
-    strLen: number,
-	testFn: P.Predicate<string>,
-}
 
 export const newStateShiftFn:
     (id: string) =>
-    (args: ShiftFnArgs) =>
+    (pred: P.Predicate<string>) =>
 	(sps: Sp.SplitString) =>
     E.Either<Err, State> =
     id =>
-    args =>
+    pred =>
     sps => {
         const fnArgs = produce(defaultGenFnArgs, draft => {
-           draft.strLen = args.strLen
-           draft.testFn = args.testFn
-           draft.splitFn = Sp.shiftLeft(args.strLen)
+           draft.strLen = 1
+           draft.testFn = pred
+           draft.splitFn = Sp.shiftLeft(1)
         }) 
         return pipe(
             sps,
@@ -216,22 +201,5 @@ export const newStopFn:
 		E.map(sp => ({ name: "State", id: id, split: sp }))
     )
 
-// stop when no match is found
 
-export type State = {
-	readonly name: "State",
-	readonly id: string,
-	readonly split: Sp.SplitString, 
-}
-
-export const stateEq:
-	(v: [State, State]) =>
-	E.Either<EqTo.Err, [State, State]> =
-	v =>
-	pipe(
-		v,
-		EqTo.checkField("name")(EqTo.basicEq),
-		E.chain(EqTo.checkField("id")(EqTo.basicEq)),
-		E.chain(EqTo.checkField("split")(Sp.splitStringEq)),
-	)
 

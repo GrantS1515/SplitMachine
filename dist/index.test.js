@@ -7,6 +7,7 @@ import * as Sp from "SplitString/dist/index.js";
 import * as EqTo from "eq-to/dist/index.js";
 import { produce } from "immer";
 import { exEq } from "fptsutils/dist/expect.js";
+import { errEq } from "fptsutils/dist/error.js";
 const sps0 = Sp.newSplitString("")("a");
 const sps1 = produce(sps0, draft => {
     draft.sep = SE.separated("", "a");
@@ -18,12 +19,7 @@ const sps3 = produce(sps0, draft => {
     draft.sep = SE.separated("aa", "");
 });
 const sps4 = Sp.newSplitString("\"a\"")("");
-const extLetterFnArgs = {
-    name: "ShiftFnArgs",
-    strLen: 1,
-    testFn: (s => pipe(s.match(/^[a-z0-9]+$/i), str => str !== null)),
-};
-const extLetterFn = Sm.newStateShiftFn("extLetter")(extLetterFnArgs);
+const extLetterFn = Sm.newStateShiftFn("extLetter")(s => pipe(s.match(/^[a-z0-9]+$/i), str => str !== null));
 const st0 = {
     name: "State",
     id: "",
@@ -71,16 +67,16 @@ const mach2 = {
 };
 describe("machine tests", () => {
     it("can transition to self letter state", () => {
-        pipe(st3, Sm.nextState(mach1), (st) => [st, E.right(st1)], EqTo.checkEither(Sm.errEq, Sm.stateEq), EqTo.toBool, b => expect(b).to.equal(true));
+        pipe(st3, Sm._nextState(mach1), (st) => [st, E.right(st1)], EqTo.checkEither(errEq, Sm.stateEq), EqTo.toBool, b => expect(b).to.equal(true));
     });
     it("letter to stop state", () => {
-        pipe(st1, Sm.nextState(mach2), (st) => [st, E.right(st4)], EqTo.checkEither(Sm.errEq, Sm.stateEq), EqTo.toBool, b => expect(b).to.equal(true));
+        pipe(st1, Sm._nextState(mach2), (st) => [st, E.right(st4)], EqTo.checkEither(errEq, Sm.stateEq), EqTo.toBool, b => expect(b).to.equal(true));
     });
     it("letter state and then stop", () => {
-        pipe(st3, Sm.interp(mach2), (sps) => [sps, E.right(sps2)], EqTo.checkEither(Sm.errEq, Sp.splitStringEq), EqTo.toBool, b => expect(b).to.equal(true));
+        pipe(st3, Sm.interp(mach2), (sps) => [sps, E.right(sps2)], EqTo.checkEither(errEq, Sp.splitStringEq), EqTo.toBool, b => expect(b).to.equal(true));
     });
     it("letter letter stop", () => {
-        pipe(st5, Sm.interp(mach2), (sps) => [sps, E.right(sps3)], EqTo.checkEither(Sm.errEq, Sp.splitStringEq), EqTo.toBool, b => expect(b).to.equal(true));
+        pipe(st5, Sm.interp(mach2), (sps) => [sps, E.right(sps3)], EqTo.checkEither(errEq, Sp.splitStringEq), EqTo.toBool, b => expect(b).to.equal(true));
     });
 });
 const genLetInsertArgs = {
@@ -103,7 +99,7 @@ const mach3 = {
 };
 describe("general state fn", () => {
     it("general shift fn can create quotes", () => {
-        pipe(st6, Sm.interp(mach3), (sps) => [sps, E.right(sps4)], EqTo.checkEither(Sm.errEq, Sp.splitStringEq), EqTo.toBool, b => expect(b).to.equal(true));
+        pipe(st6, Sm.interp(mach3), (sps) => [sps, E.right(sps4)], EqTo.checkEither(errEq, Sp.splitStringEq), EqTo.toBool, b => expect(b).to.equal(true));
     });
 });
 const stDefStop0 = produce(st0, draft => {
@@ -115,6 +111,6 @@ const defStopMach1 = Sm.newMachineWDefStop(new Map([
 ]));
 describe("Machine with stop defaults", () => {
     it("can create a defaults machine that stops when not matched by next state", () => {
-        pipe(stDefStop0, Sm.interp(defStopMach1), sps => [sps, E.right(Sp.newSplitString("a")("@"))], EqTo.checkEither(Sm.errEq, Sp.splitStringEq), EqTo.toBool, exEq(true));
+        pipe(stDefStop0, Sm.interp(defStopMach1), sps => [sps, E.right(Sp.newSplitString("a")("@"))], EqTo.checkEither(errEq, Sp.splitStringEq), EqTo.toBool, exEq(true));
     });
 });
