@@ -9,6 +9,7 @@ import * as EqTo from "eq-to/dist/index.js";
 import * as Ma from "fp-ts/lib/Map.js";
 import * as Utils from "fptsutils/dist/monoids.js";
 import { newErr } from "fptsutils/dist/error.js";
+export const newState = id => sp => ({ name: "State", id: id, split: sp });
 export const stateEq = v => pipe(v, EqTo.checkField("name")(EqTo.basicEq), E.chain(EqTo.checkField("id")(EqTo.basicEq)), E.chain(EqTo.checkField("split")(Sp.splitStringEq)));
 export const newMachineWDefStop = transitions => {
     const defStop = sps => pipe(({

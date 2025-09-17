@@ -22,6 +22,14 @@ export type State = {
 	readonly split: Sp.SplitString, 
 }
 
+export const newState:
+    (id: string) =>
+    (sp: Sp.SplitString) =>
+    State =
+    id =>
+    sp =>
+    ({ name: "State", id: id, split: sp })
+
 export const stateEq:
 	(v: [State, State]) =>
 	E.Either<EqTo.Err, [State, State]> =
